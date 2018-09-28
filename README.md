@@ -1,0 +1,2 @@
+# generate-flag-dataset
+generate datasets with images containing various of flags
