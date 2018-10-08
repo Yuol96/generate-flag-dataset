@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 import cv2
+from tqdm import tqdm
 
 from torchvision import transforms
 
@@ -23,6 +24,9 @@ class FlagBuilder:
 		img = cv2.imread(img_path)
 		# img = np.array(Image.open(img_path))
 		return img
+
+	def save_image(self, img, img_path):
+		cv2.imwrite(img_path, img)
 
 	def load_gallery(self, phase):
 		gallery_dir = self.root_dir / 'data' / 'flag' / 'gallery' / phase
@@ -78,10 +82,28 @@ class FlagBuilder:
 			bboxList.append(bbox)
 		return img, bboxList
 
-	def build_randomDataset(self,num_flags,iter_img_paths):
-		for idx, path in enumerate(iter_img_paths):
-			pass
-
+	def build_randomDataset(self,num_flags,iter_img_paths,phase, scaleRange=(0.07, 0.15)):
+		imgs_dir = self.root_dir / 'data' / 'flag' / 'imgs' / phase
+		imgs_dir.mkdir(parents=True, exist_ok=True)
+		gallery = self.load_gallery(phase)
+		infoList = []
+		for idx, path in tqdm(enumerate(iter_img_paths)):
+			img = self.load_image(str(path))
+			img, bboxList = self.random_insert_multiflags(img, gallery, num_flags, scaleRange)
+			save_path = imgs_dir / '{}.png'.format(idx)
+			self.save_image(img, str(save_path))
+			info = {
+				'index': idx,
+				'path': str(save_path),
+				'source': str(path),
+				'bboxList': bboxList,
+			}
+			infoList.append(info)
+		import json
+		jsonStr = json.dumps(infoList)
+		with open(str(self.root_dir / 'data' / 'flag' / 'infoList.json'), 'w') as hd:
+			hd.write(jsonStr)
+		print("generated {} dataset!".format(phase))
 
 	def build_randomGallery(self, num_train_classes=1, num_test_classes=1, size=(120,120)):
 		flagGen = RandomFlagGenerator()
@@ -100,12 +122,15 @@ class FlagBuilder:
 
 
 if __name__ == '__main__':
-	import argparse
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--gallery', default=False, action="store_true")
-	parser.add_argument('--dir', default="./")
-	parser.add_argument("--size", default=120, type=int)
-	args = parser.parse_args()
-	if args.gallery:
-		builder = FlagBuilder(args.dir)
-		builder.build_randomGallery(100, 100, size=(args.size, args.size))
+	builder = FlagBuilder('/home/huangyucheng/MYDATA/dl-github/Siamese-RPN')
+	iter_img_paths = Path('/home/huangyucheng/MYDATA/DATASETS/PASCAL_VOC/VOCdevkit/VOC2007/JPEGImages').glob('*00.jpg')
+	builder.build_randomDataset(5, iter_img_paths, 'train')
+	# import argparse
+	# parser = argparse.ArgumentParser()
+	# parser.add_argument('--gallery', default=False, action="store_true")
+	# parser.add_argument('--dir', default="./")
+	# parser.add_argument("--size", default=120, type=int)
+	# args = parser.parse_args()
+	# if args.gallery:
+	# 	builder = FlagBuilder(args.dir)
+	# 	builder.build_randomGallery(100, 100, size=(args.size, args.size))
