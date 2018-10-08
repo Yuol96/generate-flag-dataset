@@ -1,7 +1,8 @@
 import numpy as np
 import torch
 from torchvision import transforms
-from torchvision.utils import make_grid
+from PIL import Image
+from pathlib import Path
 
 class RandomFlagGenerator:
     def __init__(self, colorset=None):
@@ -66,10 +67,25 @@ class RandomFlagGenerator:
         img[img==0] = 1
         return img
 
-    # def randomTransformFlag(self, img):
+class FlagDatasetGenerator:
+    def __init__(self, iter_img_path):
+        self.iter_img_path = iter_img_path
+
+    def loadGallery(self, gallery_dir):
+        gallery_dir = Path(gallery_dir)
+        for phase in ['train','test']:
+            for file in (gallery_dir/phase).glob('*.png'):
+                clsIdx = int(file.name.split('.')[0])
+                img = Image.open(str(file))
+                
+
+
+
+
 
 def test_transform():
     from PIL import Image
+    from torchvision.utils import make_grid
     fgen = RandomFlagGenerator(None)
     while True:
         imgs = [fgen.getRandomFlag((120,120))]

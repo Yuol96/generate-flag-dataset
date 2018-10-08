@@ -14,7 +14,7 @@ def build_randomGallery(num_train_classes=1, num_test_classes=1, dataset_dir='./
 		cv2.imwrite(str(gallery_dir/'train'/'{}.png'.format(idx)), img)
 	for idx in range(num_test_classes):
 		img = flagGen.getRandomFlag(size)
-		cv2.imwrite(str(gallery_dir/'test'/'{}.png'.format(idx)), img)
+		cv2.imwrite(str(gallery_dir/'test'/'{}.png'.format(idx+num_train_classes)), img)
 
 if __name__ == '__main__':
 	build_randomGallery(100, 100)
