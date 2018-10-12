@@ -11,7 +11,7 @@ import datetime
 from torchvision import transforms
 
 class FlagBuilder:
-	def __init__(self, root_dir='./', name=""):
+	def __init__(self, root_dir='./'):
 		self.root_dir = Path(root_dir)
 		(self.root_dir/'data').mkdir(exist_ok=True)
 
